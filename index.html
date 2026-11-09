@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mis Fragmentos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Portapapeles personal: guarda textos, enlaces e imágenes y cópialos con un toque.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f3a8a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fragmentos">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: columna única tipo "pila de recortes" — compositor arriba, recortes con borde de cinta debajo */
+:root{
+  --bg:#eef1f8; --surface:#ffffff; --ink:#141b2d; --muted:#5d6782; --line:#d8deec;
+  --accent:#2447c9; --accent-ink:#ffffff; --accent-soft:#e3e9fb;
+  --tape:#f4c84a; --danger:#c8352b; --danger-soft:#fbe7e5;
+  --f-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1220; --surface:#161d30; --ink:#e8ecf7; --muted:#97a1bd; --line:#27304a;
+  --accent:#7d97ff; --accent-ink:#0d1220; --accent-soft:#1e2847;
+  --tape:#d9ad2e; --danger:#ff7d72; --danger-soft:#3a1e22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1220; --surface:#161d30; --ink:#e8ecf7; --muted:#97a1bd; --line:#27304a;
+  --accent:#7d97ff; --accent-ink:#0d1220; --accent-soft:#1e2847;
+  --tape:#d9ad2e; --danger:#ff7d72; --danger-soft:#3a1e22; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:16px; line-height:1.5;
+  min-height:100vh; -webkit-tap-highlight-color:transparent;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px);
+}
+.wrap{max-width:520px;margin:0 auto;padding-block:20px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-display);font-weight:800;font-size:2rem;letter-spacing:-.02em;line-height:1;margin:0;text-wrap:balance}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);font-size:.85rem;margin-top:6px}
+.ver{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:3px 8px;white-space:nowrap}
+
+/* Compositor */
+.composer{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 24px -16px rgba(20,30,70,.35)}
+textarea{width:100%;font:inherit;color:var(--ink);background:transparent;border:0;outline:0;resize:none;min-height:84px;padding:2px}
+textarea::placeholder{color:var(--muted)}
+.preview{position:relative;border-radius:10px;overflow:hidden;border:1px dashed var(--line);background:var(--bg)}
+.preview img{display:block;max-height:180px;width:100%;object-fit:contain}
+.preview button{position:absolute;top:8px;right:8px}
+.row{display:flex;gap:10px}
+.btn{appearance:none;font:inherit;font-weight:600;font-size:.95rem;border-radius:11px;padding:11px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;transition:transform .08s ease,background .15s}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn svg{width:18px;height:18px;flex:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);flex:1}
+.btn.ghost{flex:1}
+.btn.icon{padding:8px;min-height:36px;min-width:36px;border-radius:10px;background:var(--surface)}
+.btn.danger{color:var(--danger);background:var(--danger-soft);border-color:transparent}
+.btn.ok{background:var(--accent-soft);color:var(--accent);border-color:transparent;flex:1}
+input[type=file]{display:none}
+
+/* Barra de filtros */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.chips{display:flex;gap:6px}
+.chip{font:inherit;font-size:.82rem;font-weight:600;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:99px;padding:6px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.count{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.search{width:100%;font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:10px 12px;outline:0}
+.search:focus{border-color:var(--accent)}
+
+/* Recortes */
+.list{display:flex;flex-direction:column;gap:14px}
+.clip{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 14px 12px;display:flex;flex-direction:column;gap:10px;min-width:0;animation:in .25s ease both}
+.clip::before{content:"";position:absolute;top:-7px;left:18px;width:54px;height:14px;background:var(--tape);opacity:.85;transform:rotate(-3deg);border-radius:2px}
+@keyframes in{from{transform:translateY(6px);opacity:.4}to{transform:none;opacity:1}}
+.meta{display:flex;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.text{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;margin:0;font-size:.92rem;line-height:1.45;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden}
+.text.full{display:block;-webkit-line-clamp:unset;line-clamp:unset;max-height:16em;overflow:auto}
+.more{align-self:flex-start;font:inherit;font-size:.8rem;font-weight:600;color:var(--accent);background:none;border:0;padding:0;margin-top:-4px;cursor:pointer}
+.clip.compact{padding:13px 12px 10px;gap:8px}
+
+/* Editar */
+.clip.is-editing{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.clip.is-editing::before{background:var(--accent)}
+.edit-area{width:100%;font:inherit;font-size:.95rem;line-height:1.45;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;outline:0;resize:none;min-height:90px}
+.edit-area:focus{border-color:var(--accent)}
+.edit-foot{display:flex;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-size:.68rem;color:var(--muted);margin-top:-2px;font-variant-numeric:tabular-nums}
+@media (hover:none){.edit-foot .kbd{display:none}}
+.actions .btn.primary{flex:1}
+
+/* Ordenar */
+.sortbtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.sort-note{font-size:.85rem;color:var(--muted);background:var(--accent-soft);border-radius:11px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sort-note b{color:var(--accent)}
+.sorting .clip{flex-direction:row;align-items:center;gap:10px;padding:10px 10px 10px 8px}
+.sorting .clip::before{display:none}
+.sorting .clip .meta,.sorting .clip .actions,.sorting .clip .more{display:none}
+.sorting .clip .text{-webkit-line-clamp:1;line-clamp:1;flex:1;min-width:0;display:-webkit-box}
+.sorting .clip img{width:56px;height:44px;max-height:none;flex:none;object-fit:cover}
+.sorting .clip .sp{flex:1}
+.handle{display:none;touch-action:none;cursor:grab;color:var(--muted);padding:8px 4px;flex:none}
+.handle svg{width:20px;height:20px;display:block}
+.sorting .handle,.sorting .arrows{display:flex}
+.arrows{display:none;gap:4px;flex:none}
+.arrows .btn{min-height:36px;min-width:36px;padding:6px}
+.arrows .btn:disabled{opacity:.3}
+.clip.dragging{z-index:5;box-shadow:0 14px 30px -12px rgba(20,30,70,.5);border-color:var(--accent);transition:none;animation:none}
+.clip.shift{transition:transform .15s ease}
+.text a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.clip img{display:block;max-height:220px;width:100%;object-fit:contain;border-radius:10px;background:var(--bg);border:1px solid var(--line)}
+.actions{display:flex;gap:8px}
+.actions .btn{min-height:40px;padding:8px 12px;font-size:.88rem}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.88rem;color:var(--danger)}
+.confirm span{flex:1 1 100%}
+
+.empty{text-align:center;color:var(--muted);padding:36px 12px;border:2px dashed var(--line);border-radius:var(--r)}
+.empty b{display:block;font-family:var(--f-display);font-size:1.15rem;color:var(--ink);margin-bottom:4px}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-weight:600;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:40;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* Ajustes */
+.head-right{display:flex;align-items:center;gap:8px}
+.gear{min-height:42px;min-width:42px;border-radius:12px}
+.gear svg{width:22px;height:22px;transition:transform .4s ease}
+.gear:active svg{transform:rotate(90deg)}
+.scrim{position:fixed;inset:0;background:rgba(8,12,24,.5);z-index:30;opacity:0;transition:opacity .2s}
+.scrim.open{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--surface);color:var(--ink);border-radius:22px 22px 0 0;border-top:1px solid var(--line);
+  max-height:88vh;overflow:auto;transform:translateY(100%);transition:transform .25s ease;
+  padding-top:10px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 22px);
+  padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.sheet.open{transform:none}
+.sheet-in{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:0 auto}
+.sheet-head{display:flex;justify-content:space-between;align-items:center}
+.sheet h2{font-family:var(--f-display);font-weight:800;font-size:1.4rem;margin:0}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec-t{font-family:var(--f-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:4px}
+.seg button{font:inherit;font-weight:600;font-size:.88rem;border:0;border-radius:10px;padding:10px 6px;background:transparent;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.seg button svg{width:20px;height:20px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--accent);box-shadow:0 2px 8px -4px rgba(20,30,70,.4)}
+.seg button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.stat{display:flex;justify-content:space-between;gap:10px;font-size:.88rem;color:var(--muted);background:var(--bg);border-radius:11px;padding:10px 12px;font-variant-numeric:tabular-nums}
+.stat b{color:var(--ink);font-weight:600}
+.sec .btn{width:100%;justify-content:flex-start}
+.hint{font-size:.8rem;color:var(--muted);margin:0}
+.danger-box{display:flex;flex-direction:column;gap:8px}
+.danger-box .row .btn{flex:1;justify-content:center}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Mis <span>Fragmentos</span></h1>
+      <div class="sub">Guarda textos, enlaces e imágenes. Cópialos con un toque.</div>
+    </div>
+    <div class="head-right">
+      <div class="ver" id="ver">v1.3</div>
+      <button class="btn icon gear" id="openSettings" type="button" aria-label="Ajustes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="composer" aria-label="Nuevo fragmento">
+    <textarea id="textInput" rows="3" placeholder="Escribe un texto o pega un enlace…"></textarea>
+    <div class="preview" id="preview" hidden>
+      <img id="previewImg" alt="Vista previa de la imagen">
+      <button class="btn icon danger" id="clearImg" type="button" aria-label="Quitar imagen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="row">
+      <label class="btn ghost" for="imageInput">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 9"/></svg>
+        Imagen
+      </label>
+      <input type="file" id="imageInput" accept="image/*">
+      <button class="btn primary" id="saveBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Guardar
+      </button>
+    </div>
+  </section>
+
+  <div class="bar">
+    <div class="chips" role="group" aria-label="Filtrar">
+      <button class="chip" data-f="all" aria-pressed="true">Todos</button>
+      <button class="chip" data-f="text" aria-pressed="false">Textos</button>
+      <button class="chip" data-f="image" aria-pressed="false">Imágenes</button>
+    </div>
+    <div class="head-right">
+      <span class="count" id="count">0 guardados</span>
+      <button class="btn icon sortbtn" id="sortBtn" type="button" aria-pressed="false" aria-label="Ordenar tarjetas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="sort-note" id="sortNote" hidden><span>Arrastra desde <b>⋮⋮</b> o usa las flechas.</span><button class="btn primary" id="sortDone" type="button" style="flex:none;min-height:36px;padding:6px 14px">Listo</button></div>
+  <input class="search" id="search" type="search" placeholder="Buscar en tus textos…" autocomplete="off">
+
+  <div id="clipsList" class="list"></div>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-in">
+    <div class="grab"></div>
+    <div class="sheet-head">
+      <h2 id="sheetTitle">Ajustes</h2>
+      <button class="btn icon" id="closeSettings" type="button" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="sec">
+      <div class="sec-t">Apariencia</div>
+      <div class="seg" role="group" aria-label="Tema">
+        <button type="button" data-theme-opt="light" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Claro</button>
+        <button type="button" data-theme-opt="dark" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Oscuro</button>
+        <button type="button" data-theme-opt="auto" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>Automático</button>
+      </div>
+      <p class="hint">Automático sigue el modo del teléfono.</p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-t">Copia de seguridad</div>
+      <div class="stat"><span>Fragmentos guardados</span><b id="stTotal">0</b></div>
+      <div class="stat"><span>Última copia</span><b id="stLast">Nunca</b></div>
+      <button class="btn" id="exportBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+        Exportar copia (.json)
+      </button>
+      <label class="btn" for="importInput">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>
+        Restaurar desde copia
+      </label>
+      <input type="file" id="importInput" accept=".json,application/json">
+      <p class="hint">Al restaurar se agregan los fragmentos de la copia sin borrar los actuales; los repetidos se omiten.</p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-t">Zona de cuidado</div>
+      <div class="danger-box" id="wipeBox">
+        <button class="btn danger" id="wipeAsk" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+          Borrar todos los fragmentos
+        </button>
+      </div>
+    </div>
+
+    <p class="hint" style="text-align:center">Mis Fragmentos · <span id="verFoot"></span></p>
+  </div>
+</aside>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+const APP_VERSION = '1.3';
+document.getElementById('ver').textContent = 'v' + APP_VERSION;
+document.getElementById('verFoot').textContent = 'v' + APP_VERSION;
+
+// ---- Preferencias locales ----
+const prefs = {
+  get(k, d) { try { const v = localStorage.getItem('frag_' + k); return v === null ? d : v; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('frag_' + k, v); } catch {} }
+};
+
+// ---- Tema ----
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+function applyTheme(mode) {
+  const root = document.documentElement;
+  if (mode === 'light' || mode === 'dark') root.setAttribute('data-theme', mode);
+  else root.removeAttribute('data-theme');
+  document.querySelectorAll('[data-theme-opt]').forEach(b => b.setAttribute('aria-pressed', b.dataset.themeOpt === mode));
+  const dark = mode === 'dark' || (mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+  if (themeMeta) themeMeta.setAttribute('content', dark ? '#0d1220' : '#1f3a8a');
+}
+let themeMode = prefs.get('theme', 'auto');
+applyTheme(themeMode);
+document.querySelectorAll('[data-theme-opt]').forEach(b => b.addEventListener('click', () => {
+  themeMode = b.dataset.themeOpt; prefs.set('theme', themeMode); applyTheme(themeMode);
+}));
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme(themeMode)); } catch {}
+
+// ---- Service Worker (solo si el entorno lo permite) ----
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ---- Almacenamiento: IndexedDB con respaldo en memoria ----
+const DB_NAME = 'ClipboardPWA', STORE = 'clips';
+let db = null, memory = [], memId = 1, clips = [];
+
+function openDB() {
+  return new Promise(resolve => {
+    try {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+      };
+      req.onsuccess = e => { db = e.target.result; resolve(); };
+      req.onerror = () => resolve();
+    } catch { resolve(); }
+  });
+}
+function dbAll() {
+  if (!db) return Promise.resolve([...memory]);
+  return new Promise(res => {
+    const r = db.transaction(STORE, 'readonly').objectStore(STORE).getAll();
+    r.onsuccess = () => res(r.result || []);
+    r.onerror = () => res([]);
+  });
+}
+function dbAdd(item) {
+  if (!db) { memory.push({ ...item, id: memId++ }); return Promise.resolve(); }
+  return new Promise((res, rej) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).add(item);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+function dbPutMany(items) {
+  if (!db) { items.forEach(it => { const i = memory.findIndex(m => m.id === it.id); if (i > -1) memory[i] = it; }); return Promise.resolve(); }
+  return new Promise(res => {
+    const tx = db.transaction(STORE, 'readwrite'); const st = tx.objectStore(STORE);
+    items.forEach(it => st.put(it));
+    tx.oncomplete = res; tx.onerror = res;
+  });
+}
+// Orden: número "pos" ascendente; los antiguos sin pos se ordenan por fecha (recientes primero)
+const sortKey = c => (typeof c.pos === 'number' ? c.pos : -c.date);
+const topPos = () => clips.length ? Math.min(...clips.map(sortKey)) - 1 : 0;
+const bottomPos = () => clips.length ? Math.max(...clips.map(sortKey)) + 1 : 0;
+function dbDel(id) {
+  if (!db) { memory = memory.filter(c => c.id !== id); return Promise.resolve(); }
+  return new Promise(res => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).delete(id);
+    tx.oncomplete = res; tx.onerror = res;
+  });
+}
+
+// ---- Utilidades ----
+const $ = id => document.getElementById(id);
+let toastT;
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1900);
+}
+function esc(s) { return s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+function linkify(s) {
+  return esc(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+}
+function fmtDate(ms) {
+  const d = new Date(ms), now = new Date();
+  const hh = d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === now.toDateString()) return 'Hoy · ' + hh;
+  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' }) + ' · ' + hh;
+}
+function readFile(file) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+}
+// Reduce imágenes grandes para no llenar el almacenamiento
+function shrink(dataUrl, max = 1600) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      if (k === 1) return res(dataUrl);
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      res(c.toDataURL('image/png'));
+    };
+    img.onerror = () => res(dataUrl);
+    img.src = dataUrl;
+  });
+}
+function toPngBlob(dataUrl) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      c.getContext('2d').drawImage(img, 0, 0);
+      c.toBlob(b => b ? res(b) : rej(new Error('blob')), 'image/png');
+    };
+    img.onerror = rej; img.src = dataUrl;
+  });
+}
+
+// ---- Compositor ----
+let pendingImage = null;
+$('imageInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  pendingImage = await shrink(await readFile(f));
+  $('previewImg').src = pendingImage; $('preview').hidden = false;
+});
+$('clearImg').addEventListener('click', () => { pendingImage = null; $('imageInput').value = ''; $('preview').hidden = true; });
+
+$('saveBtn').addEventListener('click', async () => {
+  const text = $('textInput').value.trim();
+  if (!text && !pendingImage) { showToast('Escribe algo o elige una imagen'); return; }
+  try {
+    const now = Date.now();
+    const top = topPos();
+    if (pendingImage) await dbAdd({ type: 'image', content: pendingImage, date: now, pos: top });
+    if (text) await dbAdd({ type: 'text', content: text, date: now + 1, pos: top - 1 });
+    $('textInput').value = ''; pendingImage = null; $('imageInput').value = ''; $('preview').hidden = true;
+    showToast('Guardado');
+    loadClips();
+  } catch (err) {
+    showToast('No se pudo guardar. Revisa el espacio disponible.');
+  }
+});
+
+// ---- Filtros ----
+let filter = 'all', query = '';
+document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => {
+  filter = ch.dataset.f;
+  document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === ch));
+  render();
+}));
+$('search').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); render(); });
+
+// ---- Lista ----
+let sorting = false;
+const expanded = new Set();
+async function loadClips() {
+  clips = (await dbAll()).sort((a, b) => sortKey(a) - sortKey(b));
+  render();
+}
+const ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
+const ICON_DEL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M13.5 6.5l3 3"/></svg>';
+const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+const ICON_GRIP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+const ICON_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
+const ICON_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+
+function render() {
+  const list = $('clipsList');
+  list.classList.toggle('sorting', sorting);
+  const shown = sorting ? clips : clips.filter(c => c.id === editId ||
+    (filter === 'all' || c.type === filter) &&
+    (!query || (c.type === 'text' && c.content.toLowerCase().includes(query))));
+  $('count').textContent = clips.length + (clips.length === 1 ? ' guardado' : ' guardados');
+
+  if (!shown.length) {
+    list.innerHTML = clips.length
+      ? '<div class="empty"><b>Sin resultados</b>Prueba con otro filtro o búsqueda.</div>'
+      : '<div class="empty"><b>Aún no hay fragmentos</b>Escribe un texto, pega un enlace o sube una imagen y toca Guardar.</div>';
+    return;
+  }
+  list.innerHTML = shown.map((c, i) => {
+    const editing = !sorting && c.id === editId;
+    const kind = c.type === 'text' ? (/https?:\/\//.test(c.content) ? 'Enlace' : 'Texto') : 'Imagen';
+    const when = c.edited ? 'Editado ' + fmtDate(c.edited).replace('Hoy · ', 'hoy · ') : fmtDate(c.date);
+    let body;
+    if (c.type !== 'text') body = `<img src="${c.content}" alt="Imagen guardada"><span class="sp"></span>`;
+    else if (editing) body = `
+      <textarea class="edit-area" id="editArea" aria-label="Editar texto">${esc(editDraft)}</textarea>
+      <div class="edit-foot"><span id="editInfo">${editDraft.length} caracteres</span><span class="kbd">Ctrl+Enter guarda · Esc cancela</span></div>`;
+    else body = `<p class="text${expanded.has(c.id) ? ' full' : ''}">${linkify(c.content)}</p><button class="more" data-act="more" hidden>${expanded.has(c.id) ? 'Ver menos' : 'Ver más'}</button>`;
+    const actions = editing
+      ? `<div class="actions">
+          <button class="btn primary" data-act="editSave">${ICON_CHECK} Guardar cambios</button>
+          <button class="btn" data-act="editCancel">Cancelar</button></div>`
+      : `<div class="actions">
+          <button class="btn ok" data-act="copy">${ICON_COPY} Copiar</button>
+          ${c.type === 'text' ? `<button class="btn" data-act="edit" aria-label="Editar">${ICON_EDIT}</button>` : ''}
+          <button class="btn danger" data-act="ask" aria-label="Eliminar">${ICON_DEL}</button></div>`;
+    return `
+    <article class="clip${c.type === 'text' ? ' compact' : ''}${editing ? ' is-editing' : ''}" data-id="${c.id}">
+      <span class="handle" aria-hidden="true">${ICON_GRIP}</span>
+      <div class="meta"><span>${editing ? 'Editando' : kind}</span><span>${when}</span></div>
+      ${body}
+      <div class="arrows">
+        <button class="btn icon" data-act="up" aria-label="Subir" ${i === 0 ? 'disabled' : ''}>${ICON_UP}</button>
+        <button class="btn icon" data-act="down" aria-label="Bajar" ${i === shown.length - 1 ? 'disabled' : ''}>${ICON_DOWN}</button>
+      </div>
+      ${actions}
+    </article>`;
+  }).join('');
+  // Mostrar "Ver más" solo si el texto no cabe en la vista corta
+  if (!sorting) list.querySelectorAll('.clip').forEach(card => {
+    const p = card.querySelector('.text'), more = card.querySelector('.more');
+    if (p && more) more.hidden = !(p.classList.contains('full') || p.scrollHeight > p.clientHeight + 2);
+  });
+  const ta = $('editArea');
+  if (ta) { autoGrow(ta); }
+}
+
+// ---- Editar texto ----
+let editId = null, editDraft = '';
+function autoGrow(ta) { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight + 2, innerHeight * 0.5) + 'px'; }
+function startEdit(clip) {
+  editId = clip.id; editDraft = clip.content;
+  render();
+  const ta = $('editArea');
+  if (ta) {
+    ta.focus({ preventScroll: true });
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+    ta.closest('.clip').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+function cancelEdit() { editId = null; editDraft = ''; render(); }
+async function saveEdit() {
+  const clip = clips.find(c => c.id === editId); if (!clip) return cancelEdit();
+  const text = editDraft.trim();
+  if (!text) { showToast('El texto no puede quedar vacío. Usa Eliminar si ya no lo necesitas.'); return; }
+  if (text === clip.content) { cancelEdit(); showToast('Sin cambios'); return; }
+  clip.content = text; clip.edited = Date.now();
+  editId = null; editDraft = '';
+  await dbPutMany([clip]);
+  render(); showToast('Cambios guardados');
+}
+$('clipsList').addEventListener('input', e => {
+  if (e.target.id !== 'editArea') return;
+  editDraft = e.target.value; autoGrow(e.target);
+  $('editInfo').textContent = editDraft.length + ' caracteres';
+});
+$('clipsList').addEventListener('keydown', e => {
+  if (e.target.id !== 'editArea') return;
+  if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveEdit(); }
+});
+// Doble toque sobre el texto también abre el editor
+$('clipsList').addEventListener('dblclick', e => {
+  if (sorting || e.target.closest('a') || !e.target.closest('.text')) return;
+  const clip = clips.find(c => c.id === Number(e.target.closest('.clip').dataset.id));
+  if (clip && clip.type === 'text') startEdit(clip);
+});
+
+$('clipsList').addEventListener('click', async e => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  const card = btn.closest('.clip'); if (!card) return;
+  const id = Number(card.dataset.id);
+  const clip = clips.find(c => c.id === id); if (!clip) return;
+  const act = btn.dataset.act;
+  if (act === 'copy') copyClip(clip, card);
+  if (act === 'edit') {
+    if (editId !== null && editId !== id && editDraft.trim() !== (clips.find(c => c.id === editId) || {}).content) {
+      showToast('Primero guarda o cancela la edición abierta'); return;
+    }
+    startEdit(clip);
+  }
+  if (act === 'editSave') saveEdit();
+  if (act === 'editCancel') cancelEdit();
+  if (act === 'more') { expanded.has(id) ? expanded.delete(id) : expanded.add(id); render(); }
+  if (act === 'up' || act === 'down') {
+    const i = clips.indexOf(clip), j = act === 'up' ? i - 1 : i + 1;
+    if (j < 0 || j >= clips.length) return;
+    [clips[i], clips[j]] = [clips[j], clips[i]];
+    render(); saveOrder();
+    const again = $('clipsList').querySelector(`[data-id="${id}"] [data-act="${act}"]`);
+    if (again && !again.disabled) again.focus();
+  }
+  if (act === 'ask') {
+    card.querySelector('.actions').outerHTML = `
+      <div class="confirm"><span>¿Eliminar este fragmento?</span>
+        <button class="btn danger" data-act="del" style="flex:1">Sí, eliminar</button>
+        <button class="btn" data-act="cancel" style="flex:1">Cancelar</button></div>`;
+  }
+  if (act === 'cancel') render();
+  if (act === 'del') { expanded.delete(id); if (editId === id) { editId = null; editDraft = ''; } await dbDel(id); showToast('Eliminado'); loadClips(); }
+});
+
+// ---- Ordenar ----
+function saveOrder() {
+  clips.forEach((c, i) => { c.pos = i; });
+  return dbPutMany(clips);
+}
+function setSorting(on) {
+  if (on && editId !== null) { editId = null; editDraft = ''; }
+  sorting = on;
+  $('sortBtn').setAttribute('aria-pressed', on);
+  $('sortNote').hidden = !on;
+  $('search').hidden = on;
+  document.querySelector('.chips').style.visibility = on ? 'hidden' : '';
+  render();
+  if (!on) showToast('Orden guardado');
+}
+$('sortBtn').addEventListener('click', () => {
+  if (!sorting && clips.length < 2) { showToast('Necesitas al menos 2 fragmentos para ordenar'); return; }
+  setSorting(!sorting);
+});
+$('sortDone').addEventListener('click', () => setSorting(false));
+
+// Arrastrar desde el asa (funciona con dedo y mouse)
+let drag = null;
+$('clipsList').addEventListener('pointerdown', e => {
+  const handle = e.target.closest('.handle'); if (!handle || !sorting) return;
+  e.preventDefault();
+  const card = handle.closest('.clip');
+  const cards = [...$('clipsList').querySelectorAll('.clip')];
+  const rects = cards.map(c => { const r = c.getBoundingClientRect(); return { top: r.top + scrollY, bottom: r.bottom + scrollY, height: r.height }; });
+  drag = { card, cards, rects, from: cards.indexOf(card), to: cards.indexOf(card), startY: e.pageY, id: e.pointerId,
+    gap: cards.length > 1 ? rects[1].top - rects[0].bottom : 14 };
+  card.classList.add('dragging');
+  cards.forEach(c => { if (c !== card) c.classList.add('shift'); });
+  try { handle.setPointerCapture(e.pointerId); } catch {}
+});
+window.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  e.preventDefault();
+  const { card, cards, rects, from, gap } = drag;
+  const dy = e.pageY - drag.startY;
+  card.style.transform = `translateY(${dy}px)`;
+  const center = rects[from].top + rects[from].height / 2 + dy;
+  let to = from;
+  rects.forEach((r, i) => {
+    const mid = r.top + r.height / 2;
+    if (i < from && center < mid) to = Math.min(to, i);
+    if (i > from && center > mid) to = Math.max(to, i);
+  });
+  drag.to = to;
+  const h = rects[from].height + gap;
+  cards.forEach((c, i) => {
+    if (c === card) return;
+    let shift = 0;
+    if (from < to && i > from && i <= to) shift = -h;
+    if (from > to && i < from && i >= to) shift = h;
+    c.style.transform = shift ? `translateY(${shift}px)` : '';
+  });
+  // Desplazar la página al acercarse a los bordes
+  if (e.clientY < 70) window.scrollBy(0, -8);
+  else if (e.clientY > innerHeight - 70) window.scrollBy(0, 8);
+}, { passive: false });
+function endDrag(e) {
+  if (!drag || (e && e.pointerId !== drag.id)) return;
+  const { from, to } = drag;
+  drag = null;
+  if (from !== to) {
+    const [m] = clips.splice(from, 1); clips.splice(to, 0, m);
+    saveOrder();
+    if (navigator.vibrate) try { navigator.vibrate(10); } catch {}
+  }
+  render();
+}
+window.addEventListener('pointerup', endDrag);
+window.addEventListener('pointercancel', endDrag);
+
+// ---- Copiar ----
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+  let ok = false; try { ok = document.execCommand('copy'); } catch {}
+  ta.remove(); return ok;
+}
+async function copyClip(clip, card) {
+  if (clip.type === 'text') {
+    try { await navigator.clipboard.writeText(clip.content); showToast('Texto copiado'); }
+    catch { fallbackCopy(clip.content) ? showToast('Texto copiado') : showToast('No se pudo copiar'); }
+    return;
+  }
+  try {
+    // La promesa se pasa directo a ClipboardItem: así funciona también en Safari/iPhone
+    const item = new ClipboardItem({ 'image/png': toPngBlob(clip.content) });
+    await navigator.clipboard.write([item]);
+    showToast('Imagen copiada');
+  } catch {
+    showToast('Este navegador no permite copiar imágenes. Mantén presionada la imagen para copiarla.');
+  }
+}
+
+// ---- Panel de Ajustes ----
+function dbClear() {
+  if (!db) { memory = []; return Promise.resolve(); }
+  return new Promise(res => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).clear();
+    tx.oncomplete = res; tx.onerror = res;
+  });
+}
+function fmtLast() {
+  const v = Number(prefs.get('lastBackup', 0));
+  return v ? new Date(v).toLocaleString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Nunca';
+}
+function refreshStats() { $('stTotal').textContent = clips.length; $('stLast').textContent = fmtLast(); }
+function resetWipe() {
+  $('wipeBox').innerHTML = `<button class="btn danger" id="wipeAsk" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+    Borrar todos los fragmentos</button>`;
+}
+function openSettings() {
+  refreshStats(); resetWipe();
+  $('scrim').hidden = false; $('sheet').hidden = false;
+  requestAnimationFrame(() => { $('scrim').classList.add('open'); $('sheet').classList.add('open'); });
+}
+function closeSettings() {
+  $('scrim').classList.remove('open'); $('sheet').classList.remove('open');
+  setTimeout(() => { $('scrim').hidden = true; $('sheet').hidden = true; }, 250);
+}
+$('openSettings').addEventListener('click', openSettings);
+$('closeSettings').addEventListener('click', closeSettings);
+$('scrim').addEventListener('click', closeSettings);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('sheet').hidden) closeSettings(); });
+
+// Exportar copia
+$('exportBtn').addEventListener('click', async () => {
+  const all = await dbAll();
+  if (!all.length) { showToast('No hay fragmentos para respaldar'); return; }
+  const data = { app: 'Mis Fragmentos', version: APP_VERSION, exportedAt: new Date().toISOString(),
+    clips: all.sort((a, b) => sortKey(a) - sortKey(b)).map(({ type, content, date, edited }, i) => ({ type, content, date, pos: i, ...(edited ? { edited } : {}) })) };
+  const d = new Date(), pad = n => String(n).padStart(2, '0');
+  const name = `fragmentos-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const file = new File([blob], name, { type: 'application/json' });
+  let done = false;
+  // En iPhone la hoja de Compartir permite "Guardar en Archivos"
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'Copia de Mis Fragmentos' }); done = true;
+    }
+  } catch (err) { if (err && err.name === 'AbortError') return; }
+  if (!done) {
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000); done = true;
+    } catch {}
+  }
+  if (done) { prefs.set('lastBackup', Date.now()); refreshStats(); showToast(`Copia creada: ${all.length} fragmentos`); }
+  else showToast('No se pudo crear la copia en este navegador');
+});
+
+// Restaurar copia
+$('importInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    const list = Array.isArray(data) ? data : data.clips;
+    if (!Array.isArray(list)) throw new Error('formato');
+    const current = await dbAll();
+    const seen = new Set(current.map(c => c.type + '|' + c.date + '|' + c.content.length + '|' + c.content.slice(0, 80)));
+    let added = 0, skipped = 0, nextPos = bottomPos();
+    list.sort((a, b) => (Number(a && a.pos) || 0) - (Number(b && b.pos) || 0));
+    for (const c of list) {
+      if (!c || (c.type !== 'text' && c.type !== 'image') || typeof c.content !== 'string') { skipped++; continue; }
+      if (c.type === 'image' && !c.content.startsWith('data:image/')) { skipped++; continue; }
+      const date = Number(c.date) || Date.now();
+      const key = c.type + '|' + date + '|' + c.content.length + '|' + c.content.slice(0, 80);
+      if (seen.has(key)) { skipped++; continue; }
+      await dbAdd({ type: c.type, content: c.content, date, pos: nextPos++, ...(Number(c.edited) ? { edited: Number(c.edited) } : {}) }); seen.add(key); added++;
+    }
+    await loadClips(); refreshStats();
+    showToast(added ? `Restaurados ${added}` + (skipped ? ` · ${skipped} omitidos` : '') : 'Nada nuevo para restaurar');
+  } catch {
+    showToast('Ese archivo no es una copia válida de Mis Fragmentos');
+  }
+});
+
+// Borrar todo (con confirmación en el panel)
+$('wipeBox').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.id === 'wipeAsk') {
+    $('wipeBox').innerHTML = `<p class="hint" style="color:var(--danger)">Se borrarán ${clips.length} fragmentos de este dispositivo. Exporta una copia antes si la necesitas.</p>
+      <div class="row"><button class="btn danger" id="wipeYes" type="button">Sí, borrar todo</button>
+      <button class="btn" id="wipeNo" type="button">Cancelar</button></div>`;
+  }
+  if (b.id === 'wipeNo') resetWipe();
+  if (b.id === 'wipeYes') { await dbClear(); await loadClips(); refreshStats(); resetWipe(); showToast('Todo borrado'); }
+});
+
+openDB().then(loadClips);
+</script>
+</body>
+</html>
