@@ -1,5 +1,5 @@
-// Mis Fragmentos — Service Worker v1.3
-const CACHE = 'fragmentos-v1.3';
+// Mis Fragmentos — Service Worker v1.4
+const CACHE = 'fragmentos-v1.4';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 
 self.addEventListener('install', e => {

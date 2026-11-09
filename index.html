@@ -38,6 +38,7 @@
   --tape:#d9ad2e; --danger:#ff7d72; --danger-soft:#3a1e22; color-scheme:dark}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{
   background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:16px; line-height:1.5;
@@ -94,6 +95,45 @@ input[type=file]{display:none}
 .text.full{display:block;-webkit-line-clamp:unset;line-clamp:unset;max-height:16em;overflow:auto}
 .more{align-self:flex-start;font:inherit;font-size:.8rem;font-weight:600;color:var(--accent);background:none;border:0;padding:0;margin-top:-4px;cursor:pointer}
 .clip.compact{padding:13px 12px 10px;gap:8px}
+
+/* Carpetas */
+.folders{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-block:2px;-webkit-overflow-scrolling:touch}
+.folders::-webkit-scrollbar{display:none}
+.ftab{flex:none;display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:.88rem;font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer;white-space:nowrap;min-height:40px}
+.ftab .n{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ftab svg{width:16px;height:16px;flex:none}
+.ftab[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--fc,var(--accent));box-shadow:inset 0 0 0 1px var(--fc,var(--accent))}
+.ftab.add{color:var(--accent);border-style:dashed;background:transparent}
+.ftab:focus-visible,.frow:focus-visible,.sw:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.fdot{width:10px;height:10px;border-radius:3px;background:var(--fc,var(--muted));flex:none}
+.folder-head{display:flex;align-items:center;gap:8px;padding:10px 10px 10px 12px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line)}
+.folder-head .fico{width:24px;height:24px;color:var(--fc);flex:none}
+.folder-head .fname{font-family:var(--f-display);font-weight:800;font-size:1.12rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-head .btn{min-height:38px;padding:7px 10px;font-size:.85rem}
+.folder-head .btn.icon{min-width:38px;padding:7px}
+.folder-head.asking{flex-direction:column;align-items:stretch;gap:10px}
+.folder-head.asking p{margin:0;font-size:.9rem}
+.folder-head.asking .row{flex-wrap:wrap}
+.folder-head.asking .row .btn{flex:1 1 auto}
+.mleft{display:inline-flex;align-items:center;gap:8px;min-width:0}
+.ftag{display:inline-flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.ftag i{width:8px;height:8px;border-radius:2px;background:var(--fc);flex:none}
+.dest{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted)}
+.dest svg{width:18px;height:18px;flex:none}
+.dest select{flex:1;min-width:0;font:inherit;font-size:.9rem;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.flist{display:flex;flex-direction:column;gap:6px}
+.frow{display:flex;align-items:center;gap:10px;width:100%;font:inherit;text-align:left;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;min-height:48px}
+.frow:disabled{opacity:.5;cursor:default}
+.frow .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.frow small{font-family:var(--f-mono);font-size:.7rem;color:var(--muted)}
+.newrow{display:flex;gap:8px}
+.field{flex:1;min-width:0;width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:11px 12px;outline:0}
+.field:focus{border-color:var(--accent)}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:36px;height:36px;border-radius:10px;border:0;background:var(--fc);cursor:pointer}
+.sw[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:2px}
+.seg.two{grid-template-columns:1fr 1fr}
+.snip{font-size:.85rem;color:var(--muted);background:var(--bg);border-radius:10px;padding:9px 11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* Editar */
 .clip.is-editing{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
@@ -176,7 +216,7 @@ input[type=file]{display:none}
       <div class="sub">Guarda textos, enlaces e imágenes. Cópialos con un toque.</div>
     </div>
     <div class="head-right">
-      <div class="ver" id="ver">v1.3</div>
+      <div class="ver" id="ver">v1.4</div>
       <button class="btn icon gear" id="openSettings" type="button" aria-label="Ajustes">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
@@ -191,6 +231,11 @@ input[type=file]{display:none}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
+    <div class="dest" id="destRow" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <label for="saveFolder">Guardar en</label>
+      <select id="saveFolder"></select>
+    </div>
     <div class="row">
       <label class="btn ghost" for="imageInput">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 9"/></svg>
@@ -203,6 +248,9 @@ input[type=file]{display:none}
       </button>
     </div>
   </section>
+
+  <nav class="folders" id="folders" aria-label="Carpetas"></nav>
+  <div class="folder-head" id="folderHead" hidden></div>
 
   <div class="bar">
     <div class="chips" role="group" aria-label="Filtrar">
@@ -250,6 +298,7 @@ input[type=file]{display:none}
     <div class="sec">
       <div class="sec-t">Copia de seguridad</div>
       <div class="stat"><span>Fragmentos guardados</span><b id="stTotal">0</b></div>
+      <div class="stat"><span>Carpetas</span><b id="stFolders">0</b></div>
       <div class="stat"><span>Última copia</span><b id="stLast">Nunca</b></div>
       <button class="btn" id="exportBtn" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
@@ -277,10 +326,13 @@ input[type=file]{display:none}
   </div>
 </aside>
 
+<div class="scrim" id="dlgScrim" hidden></div>
+<aside class="sheet" id="dlg" role="dialog" aria-modal="true" aria-label="Carpetas" hidden><div class="sheet-in" id="dlgBody"></div></aside>
+
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.4';
 document.getElementById('ver').textContent = 'v' + APP_VERSION;
 document.getElementById('verFoot').textContent = 'v' + APP_VERSION;
 
@@ -319,10 +371,11 @@ let db = null, memory = [], memId = 1, clips = [];
 function openDB() {
   return new Promise(resolve => {
     try {
-      const req = indexedDB.open(DB_NAME, 1);
+      const req = indexedDB.open(DB_NAME, 2);
       req.onupgradeneeded = e => {
         const d = e.target.result;
         if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+        if (!d.objectStoreNames.contains('folders')) d.createObjectStore('folders', { keyPath: 'id' });
       };
       req.onsuccess = e => { db = e.target.result; resolve(); };
       req.onerror = () => resolve();
@@ -429,10 +482,12 @@ $('saveBtn').addEventListener('click', async () => {
   try {
     const now = Date.now();
     const top = topPos();
-    if (pendingImage) await dbAdd({ type: 'image', content: pendingImage, date: now, pos: top });
-    if (text) await dbAdd({ type: 'text', content: text, date: now + 1, pos: top - 1 });
+    const dest = fById($('saveFolder').value);
+    const extra = dest ? { folder: dest.id } : {};
+    if (pendingImage) await dbAdd({ type: 'image', content: pendingImage, date: now, pos: top, ...extra });
+    if (text) await dbAdd({ type: 'text', content: text, date: now + 1, pos: top - 1, ...extra });
     $('textInput').value = ''; pendingImage = null; $('imageInput').value = ''; $('preview').hidden = true;
-    showToast('Guardado');
+    showToast(dest ? `Guardado en ${dest.name}` : 'Guardado');
     loadClips();
   } catch (err) {
     showToast('No se pudo guardar. Revisa el espacio disponible.');
@@ -448,11 +503,232 @@ document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', ()
 }));
 $('search').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); render(); });
 
+// ---- Carpetas ----
+const FSTORE = 'folders';
+const FCOLORS = ['#2447c9', '#0f8a6a', '#d9480f', '#a21caf', '#c08a00', '#0e7490', '#be123c', '#5c7c0f'];
+let folders = [], memFolders = [], activeFolder = prefs.get('folder', 'all');
+const fById = id => (id ? folders.find(f => f.id === id) : undefined);
+const newFolderId = () => 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const inFolder = c => activeFolder === 'all' || (activeFolder === 'none' ? !fById(c.folder) : c.folder === activeFolder);
+const ICON_FOLDER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+const ICON_FOLDER_FILL = '<svg class="fico" viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+const ICON_STACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>';
+const ICON_MOVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+function fAll() {
+  if (!db) return Promise.resolve([...memFolders]);
+  return new Promise(res => {
+    const r = db.transaction(FSTORE, 'readonly').objectStore(FSTORE).getAll();
+    r.onsuccess = () => res(r.result || []); r.onerror = () => res([]);
+  });
+}
+function fPut(f) {
+  if (!db) { const i = memFolders.findIndex(x => x.id === f.id); i > -1 ? memFolders[i] = f : memFolders.push(f); return Promise.resolve(); }
+  return new Promise(res => { const tx = db.transaction(FSTORE, 'readwrite'); tx.objectStore(FSTORE).put(f); tx.oncomplete = res; tx.onerror = res; });
+}
+function fDel(id) {
+  if (!db) { memFolders = memFolders.filter(f => f.id !== id); return Promise.resolve(); }
+  return new Promise(res => { const tx = db.transaction(FSTORE, 'readwrite'); tx.objectStore(FSTORE).delete(id); tx.oncomplete = res; tx.onerror = res; });
+}
+async function loadFolders() {
+  folders = (await fAll()).sort((a, b) => a.pos - b.pos);
+  if (activeFolder !== 'all' && activeFolder !== 'none' && !fById(activeFolder)) activeFolder = 'all';
+  if (activeFolder === 'none' && !folders.length) activeFolder = 'all';
+}
+
+function renderFolders() {
+  const counts = {}; let none = 0;
+  clips.forEach(c => { if (fById(c.folder)) counts[c.folder] = (counts[c.folder] || 0) + 1; else none++; });
+  let html = `<button class="ftab" type="button" data-folder="all" aria-pressed="${activeFolder === 'all'}">${ICON_STACK}Todas <span class="n">${clips.length}</span></button>`;
+  if (folders.length) html += `<button class="ftab" type="button" data-folder="none" aria-pressed="${activeFolder === 'none'}"><span class="fdot"></span>Sin carpeta <span class="n">${none}</span></button>`;
+  folders.forEach(f => {
+    html += `<button class="ftab" type="button" data-folder="${f.id}" style="--fc:${f.color}" aria-pressed="${activeFolder === f.id}"><span class="fdot"></span>${esc(f.name)} <span class="n">${counts[f.id] || 0}</span></button>`;
+  });
+  html += `<button class="ftab add" type="button" data-new="1">+ Nueva carpeta</button>`;
+  $('folders').innerHTML = html;
+
+  const f = fById(activeFolder), head = $('folderHead');
+  head.classList.remove('asking');
+  if (!f) head.hidden = true;
+  else {
+    head.hidden = false; head.style.setProperty('--fc', f.color);
+    head.innerHTML = `${ICON_FOLDER_FILL}<span class="fname">${esc(f.name)}</span>
+      <button class="btn" type="button" data-fact="copyall">${ICON_COPY} Copiar todo</button>
+      <button class="btn icon" type="button" data-fact="rename" aria-label="Editar carpeta">${ICON_EDIT}</button>
+      <button class="btn icon danger" type="button" data-fact="delete" aria-label="Eliminar carpeta">${ICON_DEL}</button>`;
+  }
+
+  // Selector "Guardar en" del compositor
+  const sel = $('saveFolder');
+  const prev = sel.dataset.init ? sel.value : (f ? f.id : '');
+  sel.innerHTML = '<option value="">Sin carpeta</option>' + folders.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('');
+  sel.value = fById(prev) ? prev : '';
+  sel.dataset.init = '1';
+  $('destRow').hidden = !folders.length;
+}
+
+function setFolder(id) {
+  activeFolder = id; prefs.set('folder', id);
+  renderFolders();
+  $('saveFolder').value = fById(id) ? id : '';
+  render();
+  const on = $('folders').querySelector('[aria-pressed="true"]');
+  if (on) try { on.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' }); } catch {}
+}
+$('folders').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.new) return openFolderForm();
+  setFolder(b.dataset.folder);
+});
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch { return fallbackCopy(text); }
+}
+$('folderHead').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const f = fById(activeFolder); if (!f) return;
+  const inside = clips.filter(c => c.folder === f.id);
+  const act = b.dataset.fact, head = $('folderHead');
+  if (act === 'copyall') {
+    const texts = inside.filter(c => c.type === 'text').map(c => c.content);
+    if (!texts.length) { showToast('Esta carpeta no tiene textos para copiar'); return; }
+    (await copyText(texts.join('\n\n'))) ? showToast(`${texts.length} ${texts.length === 1 ? 'texto copiado' : 'textos copiados'}`) : showToast('No se pudo copiar');
+  }
+  if (act === 'rename') openFolderForm(f);
+  if (act === 'delete') {
+    head.classList.add('asking');
+    head.innerHTML = inside.length
+      ? `<p>¿Eliminar la carpeta <b>${esc(f.name)}</b>? Tiene ${inside.length} ${inside.length === 1 ? 'fragmento' : 'fragmentos'}.</p>
+         <div class="row"><button class="btn" type="button" data-fact="delKeep">Eliminar y conservar fragmentos</button>
+         <button class="btn danger" type="button" data-fact="delAll">Eliminar con sus fragmentos</button>
+         <button class="btn" type="button" data-fact="fcancel">Cancelar</button></div>`
+      : `<p>¿Eliminar la carpeta vacía <b>${esc(f.name)}</b>?</p>
+         <div class="row"><button class="btn danger" type="button" data-fact="delKeep">Sí, eliminar</button>
+         <button class="btn" type="button" data-fact="fcancel">Cancelar</button></div>`;
+  }
+  if (act === 'fcancel') renderFolders();
+  if (act === 'delKeep' || act === 'delAll') {
+    if (act === 'delAll') { for (const c of inside) await dbDel(c.id); }
+    else { inside.forEach(c => { delete c.folder; }); await dbPutMany(inside); }
+    await fDel(f.id); await loadFolders();
+    activeFolder = 'all'; prefs.set('folder', 'all');
+    await loadClips();
+    showToast(act === 'delAll' ? 'Carpeta y fragmentos eliminados' : 'Carpeta eliminada; los fragmentos pasaron a Sin carpeta');
+  }
+});
+
+// Hoja inferior genérica para carpetas
+let dlgCtx = null;
+function openDlg(html) {
+  $('dlgBody').innerHTML = html;
+  if ($('dlg').hidden) {
+    $('dlgScrim').hidden = false; $('dlg').hidden = false;
+    requestAnimationFrame(() => { $('dlgScrim').classList.add('open'); $('dlg').classList.add('open'); });
+  }
+}
+function closeDlg() {
+  dlgCtx = null;
+  $('dlgScrim').classList.remove('open'); $('dlg').classList.remove('open');
+  setTimeout(() => { if (!$('dlg').classList.contains('open')) { $('dlgScrim').hidden = true; $('dlg').hidden = true; } }, 250);
+}
+$('dlgScrim').addEventListener('click', closeDlg);
+const dlgHead = t => `<div class="grab"></div><div class="sheet-head"><h2>${t}</h2><button class="btn icon" type="button" data-dlg="close" aria-label="Cerrar">${ICON_X}</button></div>`;
+
+// Crear / editar carpeta
+function openFolderForm(f, then) {
+  dlgCtx = { kind: 'form', id: f ? f.id : null, color: f ? f.color : FCOLORS[folders.length % FCOLORS.length], then };
+  openDlg(`${dlgHead(f ? 'Editar carpeta' : 'Nueva carpeta')}
+    <div class="sec"><label class="sec-t" for="fName">Nombre</label>
+      <input class="field" id="fName" maxlength="30" autocomplete="off" value="${f ? esc(f.name) : ''}" placeholder="Ej: Trabajo, Clientes, Recetas"></div>
+    <div class="sec"><div class="sec-t">Color</div>
+      <div class="swatches">${FCOLORS.map(c => `<button class="sw" type="button" data-color="${c}" style="--fc:${c}" aria-pressed="${c === dlgCtx.color}" aria-label="Color ${c}"></button>`).join('')}</div></div>
+    <button class="btn primary" type="button" data-dlg="saveForm">${ICON_CHECK} ${f ? 'Guardar cambios' : 'Crear carpeta'}</button>`);
+  setTimeout(() => { const i = $('fName'); if (i) i.focus(); }, 280);
+}
+async function createFolder(name, color) {
+  const f = { id: newFolderId(), name, color, pos: folders.length ? Math.max(...folders.map(x => x.pos)) + 1 : 0 };
+  await fPut(f); await loadFolders(); return f;
+}
+function nameTaken(name, exceptId) { return folders.some(x => x.name.toLowerCase() === name.toLowerCase() && x.id !== exceptId); }
+async function saveFolderForm() {
+  const ctx = dlgCtx, name = $('fName').value.trim();
+  if (!name) { showToast('Escribe un nombre para la carpeta'); return; }
+  if (nameTaken(name, ctx.id)) { showToast('Ya existe una carpeta con ese nombre'); return; }
+  if (ctx.id) {
+    await fPut({ ...fById(ctx.id), name, color: ctx.color }); await loadFolders();
+    closeDlg(); renderFolders(); render(); showToast('Carpeta actualizada');
+  } else {
+    const f = await createFolder(name, ctx.color);
+    closeDlg(); setFolder(f.id); showToast(`Carpeta "${name}" creada`);
+  }
+}
+
+// Mover o copiar un fragmento a otra carpeta
+let moveMode = 'move';
+function openMoveDlg(clip) { dlgCtx = { kind: 'move', clipId: clip.id }; drawMoveDlg(); }
+function drawMoveDlg() {
+  const clip = clips.find(c => c.id === dlgCtx.clipId); if (!clip) return closeDlg();
+  const cur = fById(clip.folder) ? clip.folder : '';
+  const counts = {}; clips.forEach(c => { const k = fById(c.folder) ? c.folder : ''; counts[k] = (counts[k] || 0) + 1; });
+  const rows = [{ id: '', name: 'Sin carpeta' }, ...folders];
+  openDlg(`${dlgHead('Mover o copiar')}
+    <div class="snip">${clip.type === 'text' ? esc(clip.content.slice(0, 140)) : 'Imagen'}</div>
+    <div class="seg two" role="group" aria-label="Acción">
+      <button type="button" data-mode="move" aria-pressed="${moveMode === 'move'}">${ICON_MOVE}Mover</button>
+      <button type="button" data-mode="copy" aria-pressed="${moveMode === 'copy'}">${ICON_COPY}Copiar</button>
+    </div>
+    <p class="hint">${moveMode === 'move' ? 'El fragmento sale de su carpeta actual y pasa a la que elijas.' : 'Se crea una copia en la carpeta que elijas; el original se queda donde está.'}</p>
+    <div class="flist">${rows.map(r => `<button class="frow" type="button" data-dest="${r.id}" style="--fc:${r.color || 'var(--muted)'}" ${moveMode === 'move' && r.id === cur ? 'disabled' : ''}>
+      <span class="fdot"></span><span class="grow">${esc(r.name)}</span><small>${r.id === cur ? 'Actual' : (counts[r.id] || 0)}</small></button>`).join('')}</div>
+    <div class="sec"><label class="sec-t" for="mvNew">O en una carpeta nueva</label>
+      <div class="newrow"><input class="field" id="mvNew" maxlength="30" autocomplete="off" placeholder="Nombre de la carpeta">
+      <button class="btn primary" type="button" data-dlg="mvNew" style="flex:none">Crear</button></div></div>`);
+}
+async function moveOrCopy(destId) {
+  const clip = clips.find(c => c.id === dlgCtx.clipId); if (!clip) return closeDlg();
+  const dest = fById(destId), label = dest ? dest.name : 'Sin carpeta';
+  if (moveMode === 'move') {
+    if (dest) clip.folder = dest.id; else delete clip.folder;
+    await dbPutMany([clip]);
+    closeDlg(); renderFolders(); render(); showToast(`Movido a ${label}`);
+  } else {
+    const copy = { type: clip.type, content: clip.content, date: Date.now(), pos: sortKey(clip) + 0.5 };
+    if (dest) copy.folder = dest.id;
+    await dbAdd(copy); closeDlg();
+    await loadClips(); await saveOrder();
+    showToast(`Copiado a ${label}`);
+  }
+}
+
+$('dlg').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b || !dlgCtx && b.dataset.dlg !== 'close') return;
+  if (b.dataset.dlg === 'close') return closeDlg();
+  if (b.dataset.color) { dlgCtx.color = b.dataset.color; $('dlg').querySelectorAll('.sw').forEach(s => s.setAttribute('aria-pressed', s === b)); }
+  if (b.dataset.dlg === 'saveForm') saveFolderForm();
+  if (b.dataset.mode) { moveMode = b.dataset.mode; drawMoveDlg(); }
+  if (b.dataset.dest !== undefined) moveOrCopy(b.dataset.dest);
+  if (b.dataset.dlg === 'mvNew') {
+    const name = $('mvNew').value.trim();
+    if (!name) { showToast('Escribe un nombre para la carpeta'); return; }
+    if (nameTaken(name)) { showToast('Ya existe una carpeta con ese nombre'); return; }
+    const f = await createFolder(name, FCOLORS[folders.length % FCOLORS.length]);
+    renderFolders(); moveOrCopy(f.id);
+  }
+});
+$('dlg').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (e.target.id === 'fName') { e.preventDefault(); saveFolderForm(); }
+  if (e.target.id === 'mvNew') { e.preventDefault(); $('dlg').querySelector('[data-dlg="mvNew"]').click(); }
+});
+
 // ---- Lista ----
 let sorting = false;
 const expanded = new Set();
+let lastShown = [];
 async function loadClips() {
   clips = (await dbAll()).sort((a, b) => sortKey(a) - sortKey(b));
+  renderFolders();
   render();
 }
 const ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
@@ -466,19 +742,25 @@ const ICON_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 function render() {
   const list = $('clipsList');
   list.classList.toggle('sorting', sorting);
-  const shown = sorting ? clips : clips.filter(c => c.id === editId ||
+  const base = clips.filter(inFolder);
+  const shown = sorting ? base : clips.filter(c => c.id === editId || inFolder(c) &&
     (filter === 'all' || c.type === filter) &&
     (!query || (c.type === 'text' && c.content.toLowerCase().includes(query))));
-  $('count').textContent = clips.length + (clips.length === 1 ? ' guardado' : ' guardados');
+  lastShown = shown;
+  $('count').textContent = base.length + (base.length === 1 ? ' guardado' : ' guardados');
 
   if (!shown.length) {
-    list.innerHTML = clips.length
+    list.innerHTML = !base.length && clips.length
+      ? `<div class="empty"><b>${activeFolder === 'none' ? 'Todo está en carpetas' : 'Esta carpeta está vacía'}</b>Guarda un fragmento aquí desde arriba, o usa el botón de carpeta en una tarjeta para moverlo o copiarlo.</div>`
+      : clips.length
       ? '<div class="empty"><b>Sin resultados</b>Prueba con otro filtro o búsqueda.</div>'
       : '<div class="empty"><b>Aún no hay fragmentos</b>Escribe un texto, pega un enlace o sube una imagen y toca Guardar.</div>';
     return;
   }
   list.innerHTML = shown.map((c, i) => {
     const editing = !sorting && c.id === editId;
+    const fo = fById(c.folder);
+    const tag = activeFolder === 'all' && fo ? `<span class="ftag" style="--fc:${fo.color}"><i></i>${esc(fo.name)}</span>` : '';
     const kind = c.type === 'text' ? (/https?:\/\//.test(c.content) ? 'Enlace' : 'Texto') : 'Imagen';
     const when = c.edited ? 'Editado ' + fmtDate(c.edited).replace('Hoy · ', 'hoy · ') : fmtDate(c.date);
     let body;
@@ -494,11 +776,12 @@ function render() {
       : `<div class="actions">
           <button class="btn ok" data-act="copy">${ICON_COPY} Copiar</button>
           ${c.type === 'text' ? `<button class="btn" data-act="edit" aria-label="Editar">${ICON_EDIT}</button>` : ''}
+          <button class="btn" data-act="folder" aria-label="Mover o copiar a carpeta">${ICON_FOLDER}</button>
           <button class="btn danger" data-act="ask" aria-label="Eliminar">${ICON_DEL}</button></div>`;
     return `
     <article class="clip${c.type === 'text' ? ' compact' : ''}${editing ? ' is-editing' : ''}" data-id="${c.id}">
       <span class="handle" aria-hidden="true">${ICON_GRIP}</span>
-      <div class="meta"><span>${editing ? 'Editando' : kind}</span><span>${when}</span></div>
+      <div class="meta"><span class="mleft">${editing ? 'Editando' : kind}${tag}</span><span>${when}</span></div>
       ${body}
       <div class="arrows">
         <button class="btn icon" data-act="up" aria-label="Subir" ${i === 0 ? 'disabled' : ''}>${ICON_UP}</button>
@@ -570,14 +853,15 @@ $('clipsList').addEventListener('click', async e => {
     }
     startEdit(clip);
   }
+  if (act === 'folder') openMoveDlg(clip);
   if (act === 'editSave') saveEdit();
   if (act === 'editCancel') cancelEdit();
   if (act === 'more') { expanded.has(id) ? expanded.delete(id) : expanded.add(id); render(); }
   if (act === 'up' || act === 'down') {
-    const i = clips.indexOf(clip), j = act === 'up' ? i - 1 : i + 1;
-    if (j < 0 || j >= clips.length) return;
-    [clips[i], clips[j]] = [clips[j], clips[i]];
-    render(); saveOrder();
+    const arr = [...lastShown], i = arr.indexOf(clip), j = act === 'up' ? i - 1 : i + 1;
+    if (i < 0 || j < 0 || j >= arr.length) return;
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    applyOrder(arr); render(); saveOrder();
     const again = $('clipsList').querySelector(`[data-id="${id}"] [data-act="${act}"]`);
     if (again && !again.disabled) again.focus();
   }
@@ -592,6 +876,11 @@ $('clipsList').addEventListener('click', async e => {
 });
 
 // ---- Ordenar ----
+// Reordena solo los fragmentos visibles, conservando el lugar de los demás
+function applyOrder(subset) {
+  const set = new Set(subset); let k = 0;
+  clips = clips.map(c => (set.has(c) ? subset[k++] : c));
+}
 function saveOrder() {
   clips.forEach((c, i) => { c.pos = i; });
   return dbPutMany(clips);
@@ -607,7 +896,7 @@ function setSorting(on) {
   if (!on) showToast('Orden guardado');
 }
 $('sortBtn').addEventListener('click', () => {
-  if (!sorting && clips.length < 2) { showToast('Necesitas al menos 2 fragmentos para ordenar'); return; }
+  if (!sorting && clips.filter(inFolder).length < 2) { showToast('Necesitas al menos 2 fragmentos aquí para ordenar'); return; }
   setSorting(!sorting);
 });
 $('sortDone').addEventListener('click', () => setSorting(false));
@@ -657,8 +946,8 @@ function endDrag(e) {
   const { from, to } = drag;
   drag = null;
   if (from !== to) {
-    const [m] = clips.splice(from, 1); clips.splice(to, 0, m);
-    saveOrder();
+    const arr = [...lastShown]; const [m] = arr.splice(from, 1); arr.splice(to, 0, m);
+    applyOrder(arr); saveOrder();
     if (navigator.vibrate) try { navigator.vibrate(10); } catch {}
   }
   render();
@@ -703,7 +992,7 @@ function fmtLast() {
   const v = Number(prefs.get('lastBackup', 0));
   return v ? new Date(v).toLocaleString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Nunca';
 }
-function refreshStats() { $('stTotal').textContent = clips.length; $('stLast').textContent = fmtLast(); }
+function refreshStats() { $('stTotal').textContent = clips.length; $('stFolders').textContent = folders.length; $('stLast').textContent = fmtLast(); }
 function resetWipe() {
   $('wipeBox').innerHTML = `<button class="btn danger" id="wipeAsk" type="button">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
@@ -721,14 +1010,18 @@ function closeSettings() {
 $('openSettings').addEventListener('click', openSettings);
 $('closeSettings').addEventListener('click', closeSettings);
 $('scrim').addEventListener('click', closeSettings);
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('sheet').hidden) closeSettings(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!$('dlg').hidden) closeDlg(); else if (!$('sheet').hidden) closeSettings();
+});
 
 // Exportar copia
 $('exportBtn').addEventListener('click', async () => {
   const all = await dbAll();
   if (!all.length) { showToast('No hay fragmentos para respaldar'); return; }
   const data = { app: 'Mis Fragmentos', version: APP_VERSION, exportedAt: new Date().toISOString(),
-    clips: all.sort((a, b) => sortKey(a) - sortKey(b)).map(({ type, content, date, edited }, i) => ({ type, content, date, pos: i, ...(edited ? { edited } : {}) })) };
+    folders: folders.map(({ id, name, color, pos }) => ({ id, name, color, pos })),
+    clips: all.sort((a, b) => sortKey(a) - sortKey(b)).map(({ type, content, date, edited, folder }, i) => ({ type, content, date, pos: i, ...(edited ? { edited } : {}), ...(fById(folder) ? { folder } : {}) })) };
   const d = new Date(), pad = n => String(n).padStart(2, '0');
   const name = `fragmentos-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
   const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
@@ -759,6 +1052,19 @@ $('importInput').addEventListener('change', async e => {
     const data = JSON.parse(await f.text());
     const list = Array.isArray(data) ? data : data.clips;
     if (!Array.isArray(list)) throw new Error('formato');
+    // Carpetas de la copia: se unen por id o por nombre
+    const fmap = {};
+    if (!Array.isArray(data) && Array.isArray(data.folders)) {
+      for (const f of data.folders) {
+        if (!f || typeof f.id !== 'string' || typeof f.name !== 'string' || !f.name.trim()) continue;
+        const name = f.name.trim().slice(0, 30);
+        const same = fById(f.id) || folders.find(x => x.name.toLowerCase() === name.toLowerCase());
+        if (same) { fmap[f.id] = same.id; continue; }
+        const color = /^#[0-9a-f]{6}$/i.test(f.color) ? f.color : FCOLORS[folders.length % FCOLORS.length];
+        const nf = await createFolder(name, color);
+        fmap[f.id] = nf.id;
+      }
+    }
     const current = await dbAll();
     const seen = new Set(current.map(c => c.type + '|' + c.date + '|' + c.content.length + '|' + c.content.slice(0, 80)));
     let added = 0, skipped = 0, nextPos = bottomPos();
@@ -769,7 +1075,7 @@ $('importInput').addEventListener('change', async e => {
       const date = Number(c.date) || Date.now();
       const key = c.type + '|' + date + '|' + c.content.length + '|' + c.content.slice(0, 80);
       if (seen.has(key)) { skipped++; continue; }
-      await dbAdd({ type: c.type, content: c.content, date, pos: nextPos++, ...(Number(c.edited) ? { edited: Number(c.edited) } : {}) }); seen.add(key); added++;
+      await dbAdd({ type: c.type, content: c.content, date, pos: nextPos++, ...(Number(c.edited) ? { edited: Number(c.edited) } : {}), ...(fmap[c.folder] ? { folder: fmap[c.folder] } : {}) }); seen.add(key); added++;
     }
     await loadClips(); refreshStats();
     showToast(added ? `Restaurados ${added}` + (skipped ? ` · ${skipped} omitidos` : '') : 'Nada nuevo para restaurar');
@@ -782,7 +1088,7 @@ $('importInput').addEventListener('change', async e => {
 $('wipeBox').addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.id === 'wipeAsk') {
-    $('wipeBox').innerHTML = `<p class="hint" style="color:var(--danger)">Se borrarán ${clips.length} fragmentos de este dispositivo. Exporta una copia antes si la necesitas.</p>
+    $('wipeBox').innerHTML = `<p class="hint" style="color:var(--danger)">Se borrarán ${clips.length} fragmentos de este dispositivo; las carpetas se conservan. Exporta una copia antes si la necesitas.</p>
       <div class="row"><button class="btn danger" id="wipeYes" type="button">Sí, borrar todo</button>
       <button class="btn" id="wipeNo" type="button">Cancelar</button></div>`;
   }
@@ -790,7 +1096,7 @@ $('wipeBox').addEventListener('click', async e => {
   if (b.id === 'wipeYes') { await dbClear(); await loadClips(); refreshStats(); resetWipe(); showToast('Todo borrado'); }
 });
 
-openDB().then(loadClips);
+openDB().then(loadFolders).then(loadClips);
 </script>
 </body>
 </html>
